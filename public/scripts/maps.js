@@ -4,6 +4,13 @@ $(document).ready(function() {
   $('#floor').select2();
   $('#building').select2();
   customStyles();
+  const searchContent = populateSearch((newBeacons) => {
+      $('.ui.search')
+          .search({
+              type: 'category',
+              source: newBeacons
+          });
+  });
 
   var meny = Meny.create({
   	menuElement: document.querySelector( '.meny' ),
@@ -41,6 +48,14 @@ $(document).ready(function() {
     }
   });
 
+    $('#moveDevices').change(function () {
+      if ($(this).is(':checked')) {
+        updateLocations(mobile);
+      } else {
+        d3.selectAll('.beacons').on('mousedown.drag', null);
+      }
+    });
+
   $('#addbeacon').change(function () {
     $('#addgateway').prop('checked', false);
     if ($('#addbeacon').prop('checked') == true) {
@@ -52,6 +67,8 @@ $(document).ready(function() {
           $('#beaconForm').modal('show');
           $('#beaconForm #xValue').val(position.x);
           $('#beaconForm #yValue').val(position.y);
+          $('#beaconForm #building_id').val(mapBuildingNameToId($('#building').val()));
+          $('#beaconForm #floor_id').val($('#floor').val());
       });
     } else {
       d3.select('svg').on('click', null);
@@ -94,9 +111,73 @@ $(document).ready(function() {
     }
     renderSVG(mobile, data2.text, false);
   });
-});
-//returns real life x and y from locked origin in meters
 
+  $( "#registerBeacon" ).submit(function( event ) {
+    var formData = parseToJSON($( this ).serializeArray());
+    $.post('https://api.iitrtclab.com/beacons', formData)
+      .done(function(beacon){
+        window.location.reload(false);
+      })
+      .fail(function(xhr, status, error) {
+        // error handling
+        displayError(error);
+      });
+
+    event.preventDefault();
+  });
+});
+
+function updateLocations(mobile) {
+    const dragHandler = d3.drag()
+      .on("drag", function () {
+        d3.select(this)
+          .selectAll('circle')
+          .attr("cx", d3.event.x)
+          .attr("cy", d3.event.y);
+      })
+      .on('end', function() {
+        // this function runs after the user drops the beacon to its new position
+        const position = realPosition(d3.event.x, d3.event.y, mobile);
+        d3.select(this).select('.mainCircle')
+          .attr('fill', 'red')
+          .attr('data-original-title', `x: ${Number((position.x).toFixed(2))} y: ${Number((position.y).toFixed(2))}`);
+      });
+
+    dragHandler(d3.selectAll(".beacons"));
+}
+
+function parseToJSON(serializeArray){
+  var jsonObj = {};
+  jQuery.map( serializeArray, function( n, i ) {
+    if (!isNaN(n.value)) {
+      jsonObj[n.name] = Number(n.value);
+    } else {
+      jsonObj[n.name] = n.value;
+    }
+   });
+  return jsonObj;
+}
+
+function mapBuildingNameToId (buildingName) {
+  if (buildingName === 'Alumini') {
+    return 4;
+  } else if (buildingName === 'Stuart') {
+    return 31;
+  } else {
+    throw Error('Building name not recognized');
+  }
+}
+
+function populateSearch(callback) {
+  $.get('https://api.iitrtclab.com/beacons/', (beacons) => {
+    const newBeacons = beacons.map((beacon) => {
+      return {category: beacon.building_id, title: beacon.beacon_id}
+    });
+    callback(newBeacons);
+  });
+}
+
+//returns real life x and y from locked origin in meters
 function realPosition(svgX, svgY, mobile) {
   let positionObject = {};
   if (mobile) {
@@ -127,23 +208,6 @@ function renderBeacons(mobile) {
     beacons.forEach((beacon) => {
       setBeacon(beacon, mobile);
     });
-
-    const dragHandler = d3.drag()
-        .on("drag", function () {
-          d3.select(this)
-              .selectAll('circle')
-              .attr("cx", d3.event.x)
-              .attr("cy", d3.event.y);
-          })
-        .on('end', function() {
-          // this function runs after the user drops the beacon to its new position
-            const position = realPosition(d3.event.x, d3.event.y, mobile);
-            d3.select(this).select('.mainCircle')
-                .attr('fill', 'red')
-                .attr('data-original-title', `x: ${Number((position.x).toFixed(2))} y: ${Number((position.y).toFixed(2))}`);
-          });
-
-      dragHandler(d3.selectAll(".beacons"));
   });
 }
 
@@ -187,7 +251,7 @@ function renderBeacon (x, y, beacon) {
               $('[data-toggle="popover"]').popover('hide');
             });
           })
-          .style("fill", 'rgb(88, 91, 96)')
+          .style("fill", 'rgb(13, 138, 221)')
           .style("fill-opacity", "0.6")
           .style("stroke", "black")
           .style("stroke-dasharray", "80, 50")
@@ -200,7 +264,7 @@ function renderBeacon (x, y, beacon) {
 
 function renderTemporaryBeacon (x, y) {
 
-    var group = d3.select('svg').append('g').attr('class', 'beacons');
+    var group = d3.select('svg').append('g').attr('class', 'beacons').attr('id', 'temporaryBeacon');
 
     group.append('circle')
         .attr("cx", x)
@@ -216,6 +280,7 @@ function renderTemporaryBeacon (x, y) {
             d3.select(this).transition()
                 .duration(300)
                 .attr("r", "100");
+
 
         })
         .on('mouseout', function () {
@@ -379,4 +444,9 @@ function setBeacon(beacon, mobile) {
     const newX = mapX(parseFloat(d3.select('svg').attr('data-width'), 10)) - mapX(beacon.x);
     renderBeacon(mapY(beacon.y), newX, beacon);
   }
+}
+
+function displayError(error) {
+  $('.alert').remove();
+  $('nav').after(`<div class="alert alert-danger container" style="margin-top: 25px;" role="alert">Something went wrong: ${error}</div>`);
 }
