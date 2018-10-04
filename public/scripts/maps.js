@@ -176,7 +176,7 @@ function updateLocations(mobile) {
         d3.select(this)
           .selectAll('circle')
           .attr("cx", d3.event.x)
-          .attr("cy", d3.event.y);
+          .attr("cy", d3.event.y)
       })
       .on('end', function() {
         // this function runs after the user drops the beacon to its new position
@@ -309,7 +309,7 @@ function renderBeacon (x, y, beacon) {
           .attr("r", 0)
           .attr('data-toggle', 'popover')
           .attr('data-html', true)
-          //change x y value to match the position on map
+          //change x y value to match the position on map or make the form has differnt xy id and make them update in the updatelocation function
           .attr('data-content', `<div class="row"><div class="col-md-12 text-center"><strong>MAC Address:</strong> ${beacon.beacon_id}</div></div>
                 <div style="margin-top: 2px" class="row"><div class="col-md-6 text-center"><strong>x</strong>: ${Number((beacon.x).toFixed(2))}</div>
                 <div class="col-md-6 text-center"><strong>y:</strong> ${Number((beacon.y).toFixed(2))}</div></div>
