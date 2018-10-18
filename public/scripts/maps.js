@@ -382,20 +382,17 @@ function renderBeacon (x, y, beacon, beaconRssi) {
           .attr('data-html', true)
           //change x y value to match the position on map or make the form has differnt xy id and make them update in the updatelocation function
           .attr('data-content', `<div class="row"><div class="col-md-12 text-center"><strong>MAC Address:</strong> ${beacon.beacon_id}</div></div>
-<<<<<<< HEAD
-                <div style="margin-top: 2px" class="row"><div class="col-md-6 text-center"><strong>x</strong>: ${Number((beacon.x).toFixed(2))}</div>
+                <div style="margin-top: 2px" class="row"><div class="col-md-6 text-center"><strong>x:</strong> ${Number((beacon.x).toFixed(2))}</div>
                 <div class="col-md-6 text-center"><strong>y:</strong> ${Number((beacon.y).toFixed(2))}</div></div>
-                <div style="margin-top: 4px" class="row"><div class="col-md-6 text-center"><button style="width:100%" type="button" class="btn btn-warning btn-sm">Edit</button></div><div class="col-md-6 text-center"><button style="width:100%" type="button" class="btn btn-danger btn-sm" onclick="deleteBeacon('${beacon.beacon_id}')">Delete</button></div></div>
+                <div style="margin-top: 4px" class="row"><div class="col-md-6 text-center"><button style="width:100%" type="button" class="btn btn-warning btn-sm">Edit</button></div>
+                <div class="col-md-6 text-center"><button style="width:100%" type="button" class="btn btn-danger btn-sm" onclick="deleteBeacon('${beacon.beacon_id}')">Delete</button></div></div>
                 <div style="margin-top: 4px" class="row"><div class="col-md-12 text-center"><button style="width:70%" type="button" id="closePopover" class="btn btn-secondary btn-sm">Close</button></div></div>`)
-
-=======
-            <div style="margin-top: 2px" class="row"><div class="col-md-6 text-center"><strong>x</strong>: ${Number((beacon.x).toFixed(2))}</div><div class="col-md-6 text-center"><strong>y:</strong> ${Number((beacon.y).toFixed(2))}</div></div>
+            /*<div style="margin-top: 2px" class="row"><div class="col-md-6 text-center"><strong>x</strong>: ${Number((beacon.x).toFixed(2))}</div><div class="col-md-6 text-center"><strong>y:</strong> ${Number((beacon.y).toFixed(2))}</div></div>
             <div class="row"><div class="col-md-12 text-center"><strong>Last recorded RSSI:</strong> ${beaconRssi === {} ? 'No information recieved from gateway' : beaconRssi.rssi}</div></div>
             <div class="row"><div class="col-md-12 text-center"><strong>RSSI recieved at:</strong> ${beaconRssi === {} ? 'No information recieved from gateway' : moment(beaconRssi.timestamp).format('MMMM Do YYYY, h:mm:ss a')}</div></div>
             <div class="row"><div class="col-md-12 text-center"><strong>Gateway associated with:</strong> ${beaconRssi === {} ? 'No information recieved from gateway' : beaconRssi.gateway_id}</div></div>
             <div style="margin-top: 4px" class="row"><div class="col-md-6 text-center"><button style="width:100%" type="button" class="btn btn-warning btn-sm">Edit</button></div><div class="col-md-6 text-center"><button style="width:100%" type="button" class="btn btn-danger btn-sm" onclick="deleteBeacon('${beacon.beacon_id}')">Delete</button></div></div>
-            <div style="margin-top: 4px" class="row"><div class="col-md-12 text-center"><button style="width:70%" type="button" id="closePopover" class="btn btn-secondary btn-sm">Close</button></div></div>`)
->>>>>>> bdf919aa1f7707b798f508da3f72b265da7f7976
+            <div style="margin-top: 4px" class="row"><div class="col-md-12 text-center"><button style="width:70%" type="button" id="closePopover" class="btn btn-secondary btn-sm">Close</button></div></div>`)*/
           .attr('data-trigger', 'manual')
           .attr('data-placement', 'top')
           .attr('title', `Major: ${beacon.major} Minor: ${beacon.minor}`)
