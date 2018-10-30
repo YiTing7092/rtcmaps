@@ -321,6 +321,7 @@ function mapBuildingNameToId (buildingName) {
   }
 }
 
+// adding function of hover seraching becons or gateway, make it outstanding to user
 function populateSearch(callback) {
   $.get('https://api.iitrtclab.com/beacons/', (beacons) => {
     const newBeacons = beacons.map((beacon) => {
@@ -419,12 +420,14 @@ function renderBeacon (x, y, beacon, beaconRssi) {
           .attr('data-trigger', 'manual')
           .attr('data-placement', 'top')
           .attr('title', `Major: ${beacon.major} Minor: ${beacon.minor}`)
-          .on('mouseover', function() {
+          .on('mouseover', function() { //when hover it show major and minor attr
             d3.select(this).transition()
                            .duration(300)
-                           .attr("r", "100");
-
+                           .attr("r", "100")
+                           .attr('info_M', `Major: ${beacon.major}`)
+                           .attr('info_m', `Minor: ${beacon.minor}`);
           })
+
           .on('mouseout', function () {
             d3.select(this).transition()
                            .duration(300)

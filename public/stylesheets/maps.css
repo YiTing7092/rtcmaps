@@ -39,6 +39,14 @@ ul {
 #kaplanSvg {
   padding: 15px 51px;
 }
+/*use to display discription box*/
+#hover_note, #info_M, #info_m {
+  display: none;
+}
+
+#hover_note:hover, #info_M, #info_m {
+  display: block;
+}
 
 @media only screen and (max-width: 500px) {
   body {
