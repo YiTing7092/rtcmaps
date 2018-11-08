@@ -391,7 +391,7 @@ function renderGateways(mobile) {
 function renderBeacon (x, y, beacon, beaconRssi) {
 
   var group = d3.select('svg').append('g').attr('class', 'beacons').attr('id', `${beacon.beacon_id}`).attr('beacon-data', JSON.stringify(beacon));
-
+  var note = document.getElementById("hover_note").attr('Bmajor', `Major: ${beacon.major}`).attr('Bminor',`${beacon.minor}`);
   group.append('circle')
           .attr("cx", x)
           .attr("cy", y)
@@ -423,15 +423,15 @@ function renderBeacon (x, y, beacon, beaconRssi) {
           .on('mouseover', function() { //when hover it show major and minor attr
             d3.select(this).transition()
                            .duration(300)
-                           .attr("r", "100")
-                           .attr('info_M', `Major: ${beacon.major}`)
-                           .attr('info_m', `Minor: ${beacon.minor}`);
+                           .attr("r", "100");
+            d3.select(this).style('fill', 'rgb(0, 138, 0)');
           })
 
           .on('mouseout', function () {
             d3.select(this).transition()
                            .duration(300)
-                           .attr("r", "50");
+                           .attr("r", "50")
+                           .style('fill', 'rgb(13, 138, 221)');
           })
           .on('click', function() {
             $(this).popover('show');

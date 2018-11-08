@@ -33,6 +33,11 @@ ul {
   background-color: black;
   margin-left: 10%;
 }
+
+.modal_hover_note{
+  font-size: 22em;
+  background-color: black;
+}
 #aluminiSvg, #ideaShopSvg {
   padding: 0 51px;
 }
@@ -40,11 +45,11 @@ ul {
   padding: 15px 51px;
 }
 /*use to display discription box*/
-#hover_note, #info_M, #info_m {
+#hover_note {
   display: none;
 }
 
-#hover_note:hover, #info_M, #info_m {
+#hover_note:mouseover, {
   display: block;
 }
 
@@ -68,6 +73,11 @@ ul {
 .meny {
   background: #4a4d51;
   height: 100vh;
+}
+.modal_hover_note{ /*make hover-note show on screen*/
+  background: #001100;
+  height:20%;
+  width: 20%;
 }
 
 .contents {
