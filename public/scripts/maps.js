@@ -270,7 +270,7 @@ function showTestsForm(mobile) {
       $('#selectDate').modal('hide');
       const testsForDate = dateGroupedTests[$(this).find('p').text()];
       _.forEach(testsForDate, function(value, key) {
-        // There's a bug in the bossa algorithm that crashes if only to beacons are reported. Temporary soltuion.
+        // There's a bug in the bossa algorithm that crashes if only two or less beacons are reported. Temporary fix.
         if (value.length > 2) {
           setTestBeacon(testsForDate[key][0], mobile);
           $.get(indoorLocationQuery(testsForDate[key]), (data) => {
