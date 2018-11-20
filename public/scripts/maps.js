@@ -1,4 +1,4 @@
-/*global $ Meny d3 moment */
+/*global $ Meny d3 moment _ */
 
 $(document).ready(function() {
   $('#floor').select2();
@@ -65,6 +65,13 @@ $(document).ready(function() {
       renderGateways(mobile);
     } else {
       d3.selectAll('.gateways').remove();
+    }
+  });
+
+  $('#showTests').change(function () {
+    if ($(this).is(':checked')) {
+      showTestsForm(mobile);
+    } else {
     }
   });
 
@@ -229,6 +236,59 @@ $(document).ready(function() {
       event.preventDefault();
   });
 });
+
+function showTestsForm(mobile) {
+  d3.selectAll('circle').remove();
+
+  $.get('https://api.iitrtclab.com/test', (testData) => {
+    const currBuildingTests = testData.filter((test) => {
+      if (test['building_id'] === mapBuildingNameToId($('#building').val()) && test.floor === parseInt($('#floor').select2('data')[0].text.split('-')[1], 10)) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    const dateGroupedTests = _.groupBy(currBuildingTests, (test) => {
+      return moment(test.timestamp).format('MMMM Do YYYY');
+    });
+
+    _.forEach(dateGroupedTests, function(value, key) {
+      dateGroupedTests[key] = _.groupBy(dateGroupedTests[key], function(test) {
+        return test.testid;
+      });
+    });
+
+    for (let key in dateGroupedTests) {
+      if (dateGroupedTests.hasOwnProperty(key)) {
+        $('#dateList').append(`<li><p>${key}</p></li>`);
+      }
+    }
+
+    $('#selectDate').modal('show');
+    $('#selectDate li').on('click', function() {
+      $('#selectDate').modal('hide');
+      const testsForDate = dateGroupedTests[$(this).find('p').text()];
+      _.forEach(testsForDate, function(value, key) {
+        // There's a bug in the bossa algorithm that crashes if only two or less beacons are reported. Temporary fix.
+        if (value.length > 2) {
+          setTestBeacon(testsForDate[key][0], mobile);
+          $.get(indoorLocationQuery(testsForDate[key]), (data) => {
+            setEstimatedBeacon({x: data.x, y: data.y, testid: testsForDate[key][0].testid}, mobile);
+          });
+        }
+      });
+    });
+  });
+}
+
+function indoorLocationQuery(tests) {
+  let queryString = "https://api.iitrtclab.com/map/indoorlocation?";
+  _.forEach(tests, function (test) {
+    queryString += `json[]={"major":${test['beacon_major']},"minor":${test['beacon_minor']},"rssi":${test.rssi}}&`;
+  });
+  return queryString += 'algorithim=1';
+}
 
 function updateLocations(mobile) {
     const dragHandler = d3.drag()
@@ -448,7 +508,97 @@ function renderBeacon (x, y, beacon, beaconRssi) {
           .duration(300)
           .attr("r", 50)
           .attr("transform", "rotate(180deg)")
-  }
+}
+
+function renderTestBeacon (x, y, testInfo) {
+
+  var group = d3.select('svg').append('g').attr('id', testInfo.testid).attr('class', 'test').attr('test-data', JSON.stringify(testInfo));
+
+  group.append('circle')
+      .attr("cx", x)
+      .attr("cy", y)
+      .attr("r", 15);
+
+  group.append('circle')
+          .attr('class', 'mainCircle')
+          .attr("cx", x)
+          .attr("cy", y)
+          .attr("r", 0)
+          .attr("data-toggle", "tooltip")
+          .attr("title", `Testid: ${testInfo.testid}\n x: ${testInfo.x}\n y: ${testInfo.y}`)
+          .on('mouseover', function() {
+            d3.select(this).transition()
+                .duration(300)
+                .attr("r", "100");
+            $(this).tooltip();
+            $(this).tooltip('show');
+          })
+          .on('mouseout', function () {
+            d3.select(this).transition()
+                .duration(300)
+                .attr("r", "50");
+          })
+          .style("fill", 'rgb(153, 255, 102)')
+          .style("fill-opacity", "0.6")
+          .style("stroke", "black")
+          .style("stroke-dasharray", "80, 50")
+          .style("stroke-width", "8")
+          .transition()
+          .duration(300)
+          .attr("r", 50)
+          .attr("transform", "rotate(180deg)");
+}
+
+function renderEstimatedBeacon (x, y, testInfo) {
+
+  var group = d3.select('svg').append('g').attr('class', 'estimate').attr('test-data', JSON.stringify(testInfo));
+
+  group.append('circle')
+      .attr("cx", x)
+      .attr("cy", y)
+      .attr("r", 15);
+
+  group.append('circle')
+      .attr('class', 'mainCircle')
+      .attr("cx", x)
+      .attr("cy", y)
+      .attr("r", 0)
+      .attr("data-toggle", "tooltip")
+      .attr("title", `Estimate for:\nTestid: ${testInfo.testid}\n x: ${testInfo.x}\n y: ${testInfo.y}`)
+      .on('mouseover', function() {
+        d3.select(this).transition()
+            .duration(300)
+            .attr("r", "100");
+        $(this).tooltip();
+        $(this).tooltip('show');
+      })
+      .on('mouseout', function () {
+        d3.select(this).transition()
+            .duration(300)
+            .attr("r", "50");
+      })
+      .style("fill", 'rgb(204, 0, 153)')
+      .style("fill-opacity", "0.6")
+      .style("stroke", "black")
+      .style("stroke-dasharray", "80, 50")
+      .style("stroke-width", "8")
+      .transition()
+      .duration(300)
+      .attr("r", 50)
+      .attr("transform", "rotate(180deg)");
+
+  const path = d3.select('svg').append("line")
+      .style("stroke", "black")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", "4")
+      .attr("stroke-dasharray", "20 3")
+      .attr("fill", "none")
+      .attr("x1", x)
+      .attr("y1", y)
+      .attr("x2", d3.select(`#${testInfo.testid}`).select('circle').attr('cx'))
+      .attr("y2", d3.select(`#${testInfo.testid}`).select('circle').attr('cy'));
+
+}
 
 function renderTemporaryBeacon (x, y) {
 
@@ -675,6 +825,7 @@ function renderSVG (mobile, svgName, initialRender) {
     $('[data-toggle="tooltip"]').tooltip('hide');
     try {
       $('.svgContainer').empty();
+      $('#dateList').empty();
       $('.svgContainer').append(xml.documentElement);
       const svg = d3.select('svg');
       svg.attr('width', '100%');
@@ -775,6 +926,24 @@ function setBeacon(beacon, mobile, beaconRssi) {
   } else {
     const newX = mapX(parseFloat(d3.select('svg').attr('data-width'), 10)) - mapX(beacon.x);
     renderBeacon(mapY(beacon.y), newX, beacon, beaconRssi);
+  }
+}
+
+function setTestBeacon(testInfo, mobile) {
+  if (mobile) {
+    renderTestBeacon(mapX(testInfo.x), mapY(testInfo.y), testInfo);
+  } else {
+    const newX = mapX(parseFloat(d3.select('svg').attr('data-width'), 10)) - mapX(testInfo.x);
+    renderTestBeacon(mapY(testInfo.y), newX, testInfo);
+  }
+}
+
+function setEstimatedBeacon(testInfo, mobile) {
+  if (mobile) {
+    renderEstimatedBeacon(mapX(testInfo.x), mapY(testInfo.y), testInfo);
+  } else {
+    const newX = mapX(parseFloat(d3.select('svg').attr('data-width'), 10)) - mapX(testInfo.x);
+    renderEstimatedBeacon(mapY(testInfo.y), newX, testInfo);
   }
 }
 
